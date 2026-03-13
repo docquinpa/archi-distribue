@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Event Service API
+  version: 1.0.0
+  description: API REST du microservice Événements (historique des événements liés aux véhicules)
+
+servers:
+  - url: http://event-service:3000
+
+paths:
+  /events:
+    get:
+      summary: Liste tous les événements
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: vehicle_id
+          schema:
+            type: integer
+          description: Filtrer par véhicule
+        - in: query
+          name: event
+          schema:
+            type: string
+          description: Filtrer par type d'événement
+      responses:
+        '200':
+          description: Liste des événements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+
+    post:
+      summary: Crée un événement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventInput'
+      responses:
+        '201':
+          description: Événement créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+
+  /events/{id}:
+    get:
+      summary: Récupère un événement par ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de l'événement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Événement non trouvé
+
+    delete:
+      summary: Supprime un événement
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Événement supprimé
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        vehicle_id:
+          type: integer
+        time:
+          type: string
+          format: date-time
+        event:
+          type: string
+
+    EventInput:
+      type: object
+      required: [vehicle_id, time, event]
+      properties:
+        vehicle_id:
+          type: integer
+        time:
+          type: string
+          format: date-time
+        event:
+          type: string

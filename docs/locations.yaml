@@ -1,0 +1,142 @@
+openapi: 3.0.3
+info:
+  title: Vehicle Rental Service API
+  version: 1.0.0
+  description: API REST du microservice Location (locations de véhicules)
+
+servers:
+  - url: http://location-service:3000
+
+paths:
+  /locations:
+    get:
+      summary: Liste toutes les locations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+
+    post:
+      summary: Crée une nouvelle location
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationInput'
+      responses:
+        '201':
+          description: Location créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+
+  /locations/{id}:
+    get:
+      summary: Récupère une location par ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de la location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '404':
+          description: Location non trouvée
+
+    put:
+      summary: Met à jour une location
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationInput'
+      responses:
+        '200':
+          description: Location mise à jour
+
+    delete:
+      summary: Supprime une location
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Location supprimée
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        vehicle_id:
+          type: integer
+        conducteur_id:
+          type: integer
+        prix:
+          type: number
+          format: float
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date
+
+    LocationInput:
+      type: object
+      required: [vehicle_id, conducteur_id, prix, date_debut, date_fin]
+      properties:
+        vehicle_id:
+          type: integer
+        conducteur_id:
+          type: integer
+        prix:
+          type: number
+          format: float
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date

@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Localisation Service API
+  version: 1.0.0
+  description: API REST du microservice Localisation (historique GPS)
+
+servers:
+  - url: http://localisation-service:3000
+
+paths:
+  /positions:
+    get:
+      summary: Liste les positions GPS (historique)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: vehicle_id
+          schema:
+            type: integer
+          required: true
+          description: ID du véhicule
+        - in: query
+          name: start
+          schema:
+            type: string
+            format: date-time
+          description: Début de la période
+        - in: query
+          name: end
+          schema:
+            type: string
+            format: date-time
+          description: Fin de la période
+      responses:
+        '200':
+          description: Liste des positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Position'
+
+  /positions/last:
+    get:
+      summary: Dernière position connue d’un véhicule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: vehicle_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Dernière position
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Position'
+        '404':
+          description: Aucune position trouvée
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Position:
+      type: object
+      properties:
+        vehicle_id:
+          type: integer
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        timestamp:
+          type: string
+          format: date-time

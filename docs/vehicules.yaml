@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Vehicle Service API
+  version: 1.0.0
+  description: API REST du microservice Véhicules
+
+servers:
+  - url: http://vehicle-service:3000
+
+paths:
+  /vehicles:
+    get:
+      summary: Liste tous les véhicules
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des véhicules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+
+    post:
+      summary: Crée un nouveau véhicule
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInput'
+      responses:
+        '201':
+          description: Véhicule créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+
+  /vehicles/{id}:
+    get:
+      summary: Récupère un véhicule par ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails du véhicule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '404':
+          description: Véhicule non trouvé
+
+    put:
+      summary: Met à jour un véhicule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleInput'
+      responses:
+        '200':
+          description: Véhicule mis à jour
+
+    delete:
+      summary: Supprime un véhicule
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Véhicule supprimé
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        vin:
+          type: string
+        dispo:
+          type: boolean
+
+    VehicleInput:
+      type: object
+      required: [vin, dispo]
+      properties:
+        vin:
+          type: string
+        dispo:
+          type: boolean

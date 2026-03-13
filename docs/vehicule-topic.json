@@ -1,0 +1,14 @@
+{
+  "$id": "vehicle.schema.json",
+  "type": "object",
+  "title": "VehicleEvent",
+  "properties": {
+    "vehicle_id": { "type": "integer" },
+    "vin": { "type": "string" },
+    "dispo": { "type": "boolean" },
+    "event": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "version": { "type": "string", "const": "1.0" }
+  },
+  "required": ["vehicle_id", "event", "timestamp", "version"]
+}

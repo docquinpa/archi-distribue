@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Driver Service API
+  version: 1.0.0
+  description: API REST du microservice Conducteurs
+
+servers:
+  - url: http://driver-service:3000
+
+paths:
+  /drivers:
+    get:
+      summary: Liste tous les conducteurs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des conducteurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Driver'
+
+    post:
+      summary: Crée un nouveau conducteur
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverInput'
+      responses:
+        '201':
+          description: Conducteur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+
+  /drivers/{id}:
+    get:
+      summary: Récupère un conducteur par ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails du conducteur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+        '404':
+          description: Conducteur non trouvé
+
+    put:
+      summary: Met à jour un conducteur
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DriverInput'
+      responses:
+        '200':
+          description: Conducteur mis à jour
+
+    delete:
+      summary: Supprime un conducteur
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Conducteur supprimé
+
+  /licenses:
+    get:
+      summary: Liste tous les permis
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des permis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/License'
+
+    post:
+      summary: Crée un permis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LicenseInput'
+      responses:
+        '201':
+          description: Permis créé
+
+  /licenses/{id}:
+    get:
+      summary: Récupère un permis par ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails du permis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/License'
+        '404':
+          description: Permis non trouvé
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Driver:
+      type: object
+      properties:
+        id:
+          type: integer
+        prenom:
+          type: string
+        nom:
+          type: string
+        permis:
+          $ref: '#/components/schemas/License'
+
+    DriverInput:
+      type: object
+      required: [prenom, nom, permisId]
+      properties:
+        prenom:
+          type: string
+        nom:
+          type: string
+        permisId:
+          type: integer
+
+    License:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          description: Type de permis (A, B, C, D…)
+        date_valid:
+          type: string
+          format: date
+
+    LicenseInput:
+      type: object
+      required: [type, date_valid]
+      properties:
+        type:
+          type: string
+        date_valid:
+          type: string
+          format: date

@@ -1,0 +1,132 @@
+# ============================
+# Types principaux
+# ============================
+
+type Vehicle {
+  id: ID!
+  vin: String!
+  dispo: Boolean!
+
+  # Relations résolues via REST
+  lastPosition: Position
+  events: [Event!]
+  interventions: [Intervention!]
+  locations: [Location!]
+}
+
+type Driver {
+  id: ID!
+  prenom: String!
+  nom: String!
+  permis: License!
+}
+
+type License {
+  id: ID!
+  type: String!
+  date_valid: String!
+}
+
+type Intervention {
+  id: ID!
+  vehicle_id: ID!
+  state: String!
+  date: String!
+  prix: Float!
+}
+
+type Location {
+  id: ID!
+  vehicle_id: ID!
+  conducteur_id: ID!
+  prix: Float!
+  date_debut: String!
+  date_fin: String!
+
+  # Relations
+  conducteur: Driver
+  vehicle: Vehicle
+}
+
+type Event {
+  id: ID!
+  vehicle_id: ID!
+  time: String!
+  event: String!
+}
+
+type Position {
+  vehicle_id: ID!
+  latitude: Float!
+  longitude: Float!
+  timestamp: String!
+}
+
+# ============================
+# Queries
+# ============================
+
+type Query {
+  # Véhicules
+  vehicles: [Vehicle!]
+  vehicle(id: ID!): Vehicle
+
+  # Conducteurs
+  drivers: [Driver!]
+  driver(id: ID!): Driver
+
+  # Permis
+  licenses: [License!]
+  license(id: ID!): License
+
+  # Interventions
+  interventions: [Intervention!]
+  intervention(id: ID!): Intervention
+
+  # Locations (location de véhicule)
+  locations: [Location!]
+  location(id: ID!): Location
+
+  # Événements
+  events(vehicle_id: ID): [Event!]
+  event(id: ID!): Event
+
+  # Localisation (historique)
+  positions(vehicle_id: ID!, start: String, end: String): [Position!]
+  lastPosition(vehicle_id: ID!): Position
+}
+
+# ============================
+# Mutations
+# ============================
+
+type Mutation {
+  # Véhicules
+  createVehicle(vin: String!, dispo: Boolean!): Vehicle
+  updateVehicle(id: ID!, vin: String, dispo: Boolean): Vehicle
+  deleteVehicle(id: ID!): Boolean
+
+  # Conducteurs
+  createDriver(prenom: String!, nom: String!, permisId: ID!): Driver
+  updateDriver(id: ID!, prenom: String, nom: String, permisId: ID): Driver
+  deleteDriver(id: ID!): Boolean
+
+  # Permis
+  createLicense(type: String!, date_valid: String!): License
+
+  # Interventions
+  createIntervention(vehicle_id: ID!, state: String!, date: String!, prix: Float!): Intervention
+
+  # Locations
+  createLocation(
+    vehicle_id: ID!,
+    conducteur_id: ID!,
+    prix: Float!,
+    date_debut: String!,
+    date_fin: String!
+  ): Location
+
+  # Événements (rarement utilisé)
+  createEvent(vehicle_id: ID!, time: String!, event: String!): Event
+}
+

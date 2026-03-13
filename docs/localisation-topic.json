@@ -1,0 +1,13 @@
+{
+  "$id": "localisation.schema.json",
+  "type": "object",
+  "title": "LocalisationMessage",
+  "properties": {
+    "vehicle_id": { "type": "integer" },
+    "latitude": { "type": "number" },
+    "longitude": { "type": "number" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "version": { "type": "string", "const": "1.0" }
+  },
+  "required": ["vehicle_id", "latitude", "longitude", "timestamp", "version"]
+}

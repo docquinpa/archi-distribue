@@ -1,0 +1,15 @@
+{
+  "$id": "conducteur.schema.json",
+  "type": "object",
+  "title": "ConducteurEvent",
+  "properties": {
+    "conducteur_id": { "type": "integer" },
+    "prenom": { "type": "string" },
+    "nom": { "type": "string" },
+    "permis_id": { "type": "integer" },
+    "event": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "version": { "type": "string", "const": "1.0" }
+  },
+  "required": ["conducteur_id", "event", "timestamp", "version"]
+}
