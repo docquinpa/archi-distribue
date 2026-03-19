@@ -1,24 +1,4 @@
 services:
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.0
-    container_name: keycloak
-    command: start-dev --import-realm
-    environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./realms:/opt/keycloak/data/import
-    depends_on:
-      - postgres-keycloak
-    networks:
-      - backend
-
   postgres-keycloak:
     image: postgres:16
     container_name: postgres-keycloak
@@ -31,8 +11,226 @@ services:
     networks:
       - backend
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev --import-realm
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+    volumes:
+      - ./keycloak/LoCarE-realm.json:/opt/keycloak/data/import/LoCarE-realm.json:ro
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./realms:/opt/keycloak/data/import
+    depends_on:
+      - postgres-keycloak
+    networks:
+      - backend
+
+  postgres-vehicules:
+    image: postgres:16
+    container_name: postgres-vehicules
+    environment:
+      POSTGRES_DB: vehicules
+      POSTGRES_USER: vehicules
+      POSTGRES_PASSWORD: vehicules
+    volumes:
+      - vehicules-db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  postgres-conducteurs:
+    image: postgres:16
+    container_name: postgres-conducteurs
+    environment:
+      POSTGRES_DB: conducteurs
+      POSTGRES_USER: conducteurs
+      POSTGRES_PASSWORD: conducteurs
+    volumes:
+      - conducteurs-db:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - backend
+
+  postgres-maintenance:
+    image: postgres:16
+    container_name: postgres-maintenance
+    environment:
+      POSTGRES_DB: maintenance
+      POSTGRES_USER: maintenance
+      POSTGRES_PASSWORD: maintenance
+    volumes:
+      - maintenance-db:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - backend
+
+  postgres-evenements:
+    image: postgres:16
+    container_name: postgres-evenements
+    environment:
+      POSTGRES_DB: evenements
+      POSTGRES_USER: evenements
+      POSTGRES_PASSWORD: evenements
+    volumes:
+      - evenements-db:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+    networks:
+      - backend
+
+  timescaledb-localisation:
+    image: timescale/timescaledb-ha:pg16
+    container_name: timescaledb-localisation
+    environment:
+      POSTGRES_DB: localisation
+      POSTGRES_USER: localisation
+      POSTGRES_PASSWORD: localisation
+    volumes:
+      - localisation-db:/var/lib/postgresql/data
+      - ./localisation-db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5437:5432"
+    networks:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - backend
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "29092:29092"
+    networks:
+      - backend
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "8085:8080"
+    depends_on:
+      - kafka
+    networks:
+      - backend
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.109.0
+    container_name: otel-collector
+    command:
+      - --config=/etc/otelcol-contrib/config.yaml
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8889:8889"
+    networks:
+      - backend
+      - observability
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.61.0
+    container_name: jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4319:4317"
+    networks:
+      - observability
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
+    networks:
+      - observability
+
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: loki
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/config.yaml:ro
+    ports:
+      - "3100:3100"
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - observability
+
 volumes:
   keycloak-db:
+  vehicules-db:
+  conducteurs-db:
+  maintenance-db:
+  evenements-db:
+  localisation-db:
+  grafana-data:
 
 networks:
   backend:
+  observability:
+
