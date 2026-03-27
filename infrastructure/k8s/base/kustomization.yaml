@@ -8,3 +8,21 @@ resources:
   - auth.yaml
   - observability.yaml
   - ingress.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: keycloak-realm
+    files:
+      - LoCarE-realm.json=files/LoCarE-realm.json
+  - name: otel-collector-config
+    files:
+      - config.yaml=files/otel-collector-config.yaml
+  - name: prometheus-config
+    files:
+      - prometheus.yaml=files/prometheus.yaml
+  - name: loki-config
+    files:
+      - config.yaml=files/loki-config.yaml
+  - name: grafana-datasources
+    files:
+      - datasources.yaml=files/observability/grafana/provisioning/datasources/datasources.yaml

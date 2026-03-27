@@ -20,6 +20,14 @@ spec:
             - containerPort: 4317
             - containerPort: 4318
             - containerPort: 8889
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol-contrib/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
 ---
 apiVersion: v1
 kind: Service
@@ -95,8 +103,17 @@ spec:
       containers:
         - name: prometheus
           image: prom/prometheus:v2.54.1
+          args: ["--config.file=/etc/prometheus/prometheus.yaml"]
           ports:
             - containerPort: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus/prometheus.yaml
+              subPath: prometheus.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
 ---
 apiVersion: v1
 kind: Service
@@ -126,8 +143,17 @@ spec:
       containers:
         - name: loki
           image: grafana/loki:3.2.1
+          args: ["-config.file=/etc/loki/config.yaml"]
           ports:
             - containerPort: 3100
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
 ---
 apiVersion: v1
 kind: Service
@@ -164,6 +190,14 @@ spec:
               value: admin
           ports:
             - containerPort: 3000
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              subPath: datasources.yaml
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
 ---
 apiVersion: v1
 kind: Service

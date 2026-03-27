@@ -1,12 +1,3 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: keycloak-realm
-  namespace: locare
-data:
-  LoCarE-realm.json: |
-    {}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

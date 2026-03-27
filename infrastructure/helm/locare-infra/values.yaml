@@ -1,0 +1,74 @@
+namespace: locare
+
+exposeLocal:
+  enabled: false
+  keycloakNodePort: 30080
+  kafkaUiNodePort: 30085
+  grafanaNodePort: 30001
+  prometheusNodePort: 30090
+  jaegerNodePort: 30686
+
+keycloak:
+  enabled: true
+  image: quay.io/keycloak/keycloak:26.0
+  adminUser: admin
+  adminPassword: admin
+  realmFile: files/LoCarE-realm.json
+  db:
+    host: postgres-keycloak
+    name: keycloak
+    user: keycloak
+    password: keycloak
+
+postgresKeycloak:
+  enabled: true
+  image: postgres:16
+  db: keycloak
+  user: keycloak
+  password: keycloak
+
+redis:
+  enabled: true
+  image: redis:7-alpine
+
+kafka:
+  enabled: true
+  image: bitnamilegacy/kafka:4.0.0-debian-12-r10
+  clusterId: "MkU3OEVBNTcwNTJENDM2Qk"
+  nodeId: "1"
+  controllerQuorumVoters: "1@kafka:9093"
+  listeners: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+  advertisedListeners: PLAINTEXT://kafka:9092
+
+kafkaUi:
+  enabled: true
+  image: provectuslabs/kafka-ui:latest
+
+timescaledbLocalisation:
+  enabled: true
+  image: timescale/timescaledb-ha:pg16
+  db: localisation
+  user: localisation
+  password: localisation
+
+otelCollector:
+  enabled: true
+  image: otel/opentelemetry-collector-contrib:0.109.0
+
+jaeger:
+  enabled: true
+  image: jaegertracing/all-in-one:1.61.0
+
+prometheus:
+  enabled: true
+  image: prom/prometheus:v2.54.1
+
+loki:
+  enabled: true
+  image: grafana/loki:3.2.1
+
+grafana:
+  enabled: true
+  image: grafana/grafana:11.2.0
+  adminUser: admin
+  adminPassword: admin

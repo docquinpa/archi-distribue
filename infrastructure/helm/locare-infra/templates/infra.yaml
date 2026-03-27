@@ -48,7 +48,7 @@ metadata:
   namespace: {{ .Values.namespace }}
 data:
   LoCarE-realm.json: |
-    {}
+{{ .Files.Get .Values.keycloak.realmFile | nindent 4 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -99,11 +99,17 @@ metadata:
   name: keycloak
   namespace: {{ .Values.namespace }}
 spec:
+  {{- if .Values.exposeLocal.enabled }}
+  type: NodePort
+  {{- end }}
   selector:
     app: keycloak
   ports:
     - port: 8080
       targetPort: 8080
+      {{- if .Values.exposeLocal.enabled }}
+      nodePort: {{ .Values.exposeLocal.keycloakNodePort }}
+      {{- end }}
 {{- end }}
 {{- if .Values.redis.enabled }}
 ---
@@ -140,44 +146,6 @@ spec:
     - port: 6379
       targetPort: 6379
 {{- end }}
-{{- if .Values.zookeeper.enabled }}
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: zookeeper
-  namespace: {{ .Values.namespace }}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: zookeeper
-  template:
-    metadata:
-      labels:
-        app: zookeeper
-    spec:
-      containers:
-        - name: zookeeper
-          image: {{ .Values.zookeeper.image }}
-          env:
-            - name: ZOOKEEPER_CLIENT_PORT
-              value: "2181"
-          ports:
-            - containerPort: 2181
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: zookeeper
-  namespace: {{ .Values.namespace }}
-spec:
-  selector:
-    app: zookeeper
-  ports:
-    - port: 2181
-      targetPort: 2181
-{{- end }}
 {{- if .Values.kafka.enabled }}
 ---
 apiVersion: apps/v1
@@ -195,22 +163,53 @@ spec:
       labels:
         app: kafka
     spec:
+      securityContext:
+        fsGroup: 1001
       containers:
         - name: kafka
           image: {{ .Values.kafka.image }}
           env:
-            - name: KAFKA_BROKER_ID
-              value: {{ .Values.kafka.brokerId | quote }}
-            - name: KAFKA_ZOOKEEPER_CONNECT
-              value: zookeeper:2181
-            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: PLAINTEXT:PLAINTEXT
-            - name: KAFKA_ADVERTISED_LISTENERS
+            - name: KAFKA_ENABLE_KRAFT
+              value: "yes"
+            - name: KAFKA_KRAFT_CLUSTER_ID
+              value: {{ .Values.kafka.clusterId | quote }}
+            - name: KAFKA_CFG_NODE_ID
+              value: {{ .Values.kafka.nodeId | quote }}
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: {{ .Values.kafka.controllerQuorumVoters | quote }}
+            - name: KAFKA_CFG_LISTENERS
+              value: {{ .Values.kafka.listeners | quote }}
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
               value: {{ .Values.kafka.advertisedListeners }}
-            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+            - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_CFG_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_CFG_LOG_DIRS
+              value: "/bitnami/kafka/data"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /bitnami/kafka
           ports:
             - containerPort: 9092
+            - containerPort: 9093
+      volumes:
+        - name: kafka-data
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
@@ -218,11 +217,16 @@ metadata:
   name: kafka
   namespace: {{ .Values.namespace }}
 spec:
+  publishNotReadyAddresses: true
   selector:
     app: kafka
   ports:
-    - port: 9092
+    - name: broker
+      port: 9092
       targetPort: 9092
+    - name: controller
+      port: 9093
+      targetPort: 9093
 {{- end }}
 {{- if .Values.kafkaUi.enabled }}
 ---
@@ -258,11 +262,17 @@ metadata:
   name: kafka-ui
   namespace: {{ .Values.namespace }}
 spec:
+  {{- if .Values.exposeLocal.enabled }}
+  type: NodePort
+  {{- end }}
   selector:
     app: kafka-ui
   ports:
     - port: 8080
       targetPort: 8080
+      {{- if .Values.exposeLocal.enabled }}
+      nodePort: {{ .Values.exposeLocal.kafkaUiNodePort }}
+      {{- end }}
 {{- end }}
 {{- if .Values.timescaledbLocalisation.enabled }}
 ---
@@ -454,12 +464,18 @@ metadata:
   name: jaeger
   namespace: {{ .Values.namespace }}
 spec:
+  {{- if .Values.exposeLocal.enabled }}
+  type: NodePort
+  {{- end }}
   selector:
     app: jaeger
   ports:
     - name: ui
       port: 16686
       targetPort: 16686
+      {{- if .Values.exposeLocal.enabled }}
+      nodePort: {{ .Values.exposeLocal.jaegerNodePort }}
+      {{- end }}
     - name: otlp
       port: 4317
       targetPort: 4317
@@ -517,11 +533,17 @@ metadata:
   name: prometheus
   namespace: {{ .Values.namespace }}
 spec:
+  {{- if .Values.exposeLocal.enabled }}
+  type: NodePort
+  {{- end }}
   selector:
     app: prometheus
   ports:
     - port: 9090
       targetPort: 9090
+      {{- if .Values.exposeLocal.enabled }}
+      nodePort: {{ .Values.exposeLocal.prometheusNodePort }}
+      {{- end }}
 {{- end }}
 {{- if .Values.loki.enabled }}
 ---
@@ -667,9 +689,15 @@ metadata:
   name: grafana
   namespace: {{ .Values.namespace }}
 spec:
+  {{- if .Values.exposeLocal.enabled }}
+  type: NodePort
+  {{- end }}
   selector:
     app: grafana
   ports:
     - port: 3000
       targetPort: 3000
+      {{- if .Values.exposeLocal.enabled }}
+      nodePort: {{ .Values.exposeLocal.grafanaNodePort }}
+      {{- end }}
 {{- end }}
