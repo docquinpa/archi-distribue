@@ -27,6 +27,41 @@ postgresKeycloak:
   user: keycloak
   password: keycloak
 
+postgresVehicules:
+  enabled: true
+  image: postgres:16
+  db: vehicules
+  user: vehicules
+  password: vehicules
+
+postgresConducteurs:
+  enabled: true
+  image: postgres:16
+  db: conducteurs
+  user: conducteurs
+  password: conducteurs
+
+postgresLocation:
+  enabled: true
+  image: postgres:16
+  db: location
+  user: location
+  password: location
+
+postgresMaintenance:
+  enabled: true
+  image: postgres:16
+  db: maintenance
+  user: maintenance
+  password: maintenance
+
+postgresEvenements:
+  enabled: true
+  image: postgres:16
+  db: evenements
+  user: evenements
+  password: evenements
+
 redis:
   enabled: true
   image: redis:7-alpine

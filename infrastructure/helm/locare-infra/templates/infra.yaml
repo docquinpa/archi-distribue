@@ -39,6 +39,216 @@ spec:
     - port: 5432
       targetPort: 5432
 {{- end }}
+{{- if .Values.postgresVehicules.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-vehicules
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-vehicules
+  template:
+    metadata:
+      labels:
+        app: postgres-vehicules
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresVehicules.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresVehicules.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresVehicules.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresVehicules.password }}
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-vehicules
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: postgres-vehicules
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}
+{{- if .Values.postgresConducteurs.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-conducteurs
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-conducteurs
+  template:
+    metadata:
+      labels:
+        app: postgres-conducteurs
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresConducteurs.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresConducteurs.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresConducteurs.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresConducteurs.password }}
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-conducteurs
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: postgres-conducteurs
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}
+{{- if .Values.postgresLocation.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-location
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-location
+  template:
+    metadata:
+      labels:
+        app: postgres-location
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresLocation.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresLocation.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresLocation.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresLocation.password }}
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-location
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: postgres-location
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}
+{{- if .Values.postgresMaintenance.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-maintenance
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-maintenance
+  template:
+    metadata:
+      labels:
+        app: postgres-maintenance
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresMaintenance.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresMaintenance.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresMaintenance.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresMaintenance.password }}
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-maintenance
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: postgres-maintenance
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}
+{{- if .Values.postgresEvenements.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-evenements
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-evenements
+  template:
+    metadata:
+      labels:
+        app: postgres-evenements
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresEvenements.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresEvenements.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresEvenements.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresEvenements.password }}
+          ports:
+            - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-evenements
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: postgres-evenements
+  ports:
+    - port: 5432
+      targetPort: 5432
+{{- end }}
 {{- if .Values.keycloak.enabled }}
 ---
 apiVersion: v1
