@@ -10,5 +10,6 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar /app/conducteurs.jar
-EXPOSE 8080
+ENV JAVA_TOOL_OPTIONS="-Dserver.port=8082"
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "/app/conducteurs.jar"]

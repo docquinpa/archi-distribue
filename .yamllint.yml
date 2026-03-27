@@ -5,3 +5,4 @@ rules:
     max: 180
     level: warning
   truthy: disable
+  document-start: disable

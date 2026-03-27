@@ -10,5 +10,6 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar /app/event.jar
-EXPOSE 8080
+ENV JAVA_TOOL_OPTIONS="-Dserver.port=8086"
+EXPOSE 8086
 ENTRYPOINT ["java", "-jar", "/app/event.jar"]

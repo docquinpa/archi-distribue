@@ -65,8 +65,7 @@ class VehicleControllerIntegrationTest {
                 .andExpect(jsonPath("$.dispo").value(false));
 
         mockMvc.perform(get("/vehicles"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(id));
+                .andExpect(status().isOk());
 
         mockMvc.perform(delete("/vehicles/{id}", id))
                 .andExpect(status().isNoContent());

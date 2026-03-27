@@ -1,0 +1,16 @@
+type Vehicle {
+  id: ID!
+  vin: String!
+  dispo: Boolean!
+}
+
+type Query {
+  vehicles: [Vehicle!]
+  vehicle(id: ID!): Vehicle
+}
+
+type Mutation {
+  createVehicle(vin: String!, dispo: Boolean!): Vehicle
+  updateVehicle(id: ID!, vin: String, dispo: Boolean): Vehicle
+  deleteVehicle(id: ID!): Boolean
+}
