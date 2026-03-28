@@ -34,6 +34,37 @@ postgresVehicules:
   user: vehicules
   password: vehicules
 
+vehiculesService:
+  enabled: true
+  image: locare-vehicules:dev
+  imagePullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8081
+    targetPort: 8081
+  ingress:
+    enabled: true
+    className: traefik
+    host: api.locare.local
+    path: /graphql
+    restPath: /vehicles
+    pathType: Prefix
+    annotations: {}
+  database:
+    host: postgres-vehicules
+    port: 5432
+    name: vehicules
+    user: vehicules
+    password: vehicules
+  kafka:
+    enabled: true
+    bootstrapServers: kafka:9092
+    topicVehicle: vehicule_topic
+    groupId: vehicules-service
+  security:
+    enabled: true
+    jwtIssuerUri: http://keycloak:8080/realms/LoCarE
+
 postgresConducteurs:
   enabled: true
   image: postgres:16

@@ -81,6 +81,97 @@ spec:
     - port: 5432
       targetPort: 5432
 {{- end }}
+{{- if .Values.vehiculesService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicules-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.vehiculesService.replicas }}
+  selector:
+    matchLabels:
+      app: vehicules-service
+  template:
+    metadata:
+      labels:
+        app: vehicules-service
+    spec:
+      containers:
+        - name: vehicules-service
+          image: {{ .Values.vehiculesService.image }}
+          imagePullPolicy: {{ .Values.vehiculesService.imagePullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.vehiculesService.service.targetPort | quote }}
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.vehiculesService.database.host }}:{{ .Values.vehiculesService.database.port }}/{{ .Values.vehiculesService.database.name }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.vehiculesService.database.user }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: {{ .Values.vehiculesService.database.password }}
+            - name: KAFKA_ENABLED
+              value: {{ .Values.vehiculesService.kafka.enabled | quote }}
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.vehiculesService.kafka.bootstrapServers }}
+            - name: KAFKA_TOPIC_VEHICLE
+              value: {{ .Values.vehiculesService.kafka.topicVehicle }}
+            - name: KAFKA_GROUP_ID
+              value: {{ .Values.vehiculesService.kafka.groupId }}
+            - name: APP_SECURITY_ENABLED
+              value: {{ .Values.vehiculesService.security.enabled | quote }}
+            - name: JWT_ISSUER_URI
+              value: {{ .Values.vehiculesService.security.jwtIssuerUri }}
+          ports:
+            - containerPort: {{ .Values.vehiculesService.service.targetPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehicules-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: vehicules-service
+  ports:
+    - port: {{ .Values.vehiculesService.service.port }}
+      targetPort: {{ .Values.vehiculesService.service.targetPort }}
+{{- if .Values.vehiculesService.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vehicules-graphql-ingress
+  namespace: {{ .Values.namespace }}
+  {{- with .Values.vehiculesService.ingress.annotations }}
+  annotations:
+{{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.vehiculesService.ingress.className }}
+  rules:
+    - host: {{ .Values.vehiculesService.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.vehiculesService.ingress.path }}
+            pathType: {{ .Values.vehiculesService.ingress.pathType }}
+            backend:
+              service:
+                name: vehicules-service
+                port:
+                  number: {{ .Values.vehiculesService.service.port }}
+          {{- if .Values.vehiculesService.ingress.restPath }}
+          - path: {{ .Values.vehiculesService.ingress.restPath }}
+            pathType: {{ .Values.vehiculesService.ingress.pathType }}
+            backend:
+              service:
+                name: vehicules-service
+                port:
+                  number: {{ .Values.vehiculesService.service.port }}
+          {{- end }}
+{{- end }}
+{{- end }}
 {{- if .Values.postgresConducteurs.enabled }}
 ---
 apiVersion: apps/v1
