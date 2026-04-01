@@ -1,6 +1,8 @@
 package fr.univrouen.driver.conducteur.service;
 
+import java.util.List;
 import org.springframework.stereotype.Service;
+import fr.univrouen.driver.conducteur.api.ConducteurNotFoundException;
 import fr.univrouen.driver.conducteur.api.ConducteurResponse;
 import fr.univrouen.driver.conducteur.domain.Conducteur;
 import fr.univrouen.driver.conducteur.messaging.ConducteurEventPublisher;
@@ -16,15 +18,15 @@ public class ConducteurService {
         this.conducteurEventPublisher = conducteurEventPublisher;
     }
 
-    public ConducteurResponse[] findAll() {
+    public List<ConducteurResponse> findAll() {
         return conducteurRepository.findAll().stream()
                 .map(this::toResponse)
-                .toArray(ConducteurResponse[]::new);
+                .toList();
     }
 
     public ConducteurResponse findById(Integer id) {
         Conducteur conducteur = conducteurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conducteur not found with id: " + id));
+                .orElseThrow(() -> new ConducteurNotFoundException(id));
         return toResponse(conducteur);
     }
 
@@ -37,7 +39,7 @@ public class ConducteurService {
 
     public ConducteurResponse update(Integer id, Conducteur conducteur) {
         Conducteur existing = conducteurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conducteur not found with id: " + id));
+                .orElseThrow(() -> new ConducteurNotFoundException(id));
         existing.setPrenom(conducteur.getPrenom());
         existing.setNom(conducteur.getNom());
         existing.setPermis(conducteur.getPermis());
@@ -49,7 +51,7 @@ public class ConducteurService {
 
     public ConducteurResponse patch(Integer id, String prenom, String nom) {
         Conducteur existing = conducteurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conducteur not found with id: " + id));
+                .orElseThrow(() -> new ConducteurNotFoundException(id));
         if (prenom != null && !prenom.isBlank()) {
             existing.setPrenom(prenom);
         }
@@ -64,7 +66,7 @@ public class ConducteurService {
 
     public void delete(Integer id) {
         Conducteur conducteur = conducteurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conducteur not found with id: " + id));
+                .orElseThrow(() -> new ConducteurNotFoundException(id));
         conducteurRepository.delete(conducteur);
         conducteurEventPublisher.publishDeleted(id);
     }

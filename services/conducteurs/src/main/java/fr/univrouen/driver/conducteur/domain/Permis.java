@@ -1,10 +1,15 @@
 package fr.univrouen.driver.conducteur.domain;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.Set;
@@ -20,16 +25,11 @@ public class Permis {
     @Column(nullable = false)
     private LocalDate dateValidite;
 
-    @Column(nullable = false)
+    @ElementCollection(targetClass = PermisTypes.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "permis_types", joinColumns = @JoinColumn(name = "permis_id"))
+    @Column(name = "type", nullable = false)
     private Set<PermisTypes> types;
-
-    public Permis() {
-    }
-
-    public Permis(LocalDate dateValidite, Set<PermisTypes> types) {
-        this.dateValidite = dateValidite;
-        this.types = types;
-    }
 
     public Integer getId() {
         return id;
@@ -43,12 +43,11 @@ public class Permis {
         return types;
     }
 
-    public void setDateValidite(LocalDate dateValidite) {
-        this.dateValidite = dateValidite;
-    }
-
     public void setTypes(Set<PermisTypes> types) {
         this.types = types;
     }
-}
+
+    public void setDateValidite(LocalDate dateValidite) {
+        this.dateValidite = dateValidite;
     }
+}

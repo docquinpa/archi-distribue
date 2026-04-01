@@ -1,0 +1,27 @@
+type Permis {
+  id: ID!
+  type: String
+  date_valid: String
+}
+
+type Conducteur {
+  id: ID!
+  prenom: String!
+  nom: String!
+  permis: Permis
+}
+
+type Query {
+  drivers: [Conducteur!]
+  driver(id: ID!): Conducteur
+  licenses: [Permis!]
+  license(id: ID!): Permis
+}
+
+type Mutation {
+  createDriver(prenom: String!, nom: String!, permisId: ID!): Conducteur
+  updateDriver(id: ID!, prenom: String, nom: String, permisId: ID!): Conducteur
+  deleteDriver(id: ID!): Boolean
+  createLicense(type: String!, date_valid: String!): Permis
+  deleteLicense(id: ID!): Boolean
+}
