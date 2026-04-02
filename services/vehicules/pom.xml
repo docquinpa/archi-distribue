@@ -148,6 +148,16 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>java/*</exclude>
+                                <exclude>java/**</exclude>
+                                <exclude>jdk/**</exclude>
+                                <exclude>sun/**</exclude>
+                                <exclude>com/sun/**</exclude>
+                                <exclude>*MockitoMock*</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>report</id>
@@ -155,6 +165,12 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>fr/univrouen/vehicules/config/**</exclude>
+                                <exclude>fr/univrouen/vehicules/VehiculesApplication*</exclude>
+                            </excludes>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>jacoco-check</id>
@@ -163,6 +179,10 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
+                            <excludes>
+                                <exclude>fr/univrouen/vehicules/config/**</exclude>
+                                <exclude>fr/univrouen/vehicules/VehiculesApplication*</exclude>
+                            </excludes>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>

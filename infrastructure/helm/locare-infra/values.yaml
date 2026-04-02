@@ -72,6 +72,37 @@ postgresConducteurs:
   user: conducteurs
   password: conducteurs
 
+conducteursService:
+  enabled: true
+  image: locare-conducteurs:dev
+  imagePullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8082
+    targetPort: 8082
+  ingress:
+    enabled: false
+    className: traefik
+    host: conducteurs.api.locare.local
+    path: /graphql
+    restPath: /drivers
+    pathType: Prefix
+    annotations: {}
+  database:
+    host: postgres-conducteurs
+    port: 5432
+    name: conducteurs
+    user: conducteurs
+    password: conducteurs
+  kafka:
+    enabled: true
+    bootstrapServers: kafka:9092
+    topicConducteur: conducteur_topic
+    groupId: conducteurs-service
+  security:
+    enabled: true
+    jwtIssuerUri: http://keycloak:8080/realms/LoCarE
+
 postgresLocation:
   enabled: true
   image: postgres:16

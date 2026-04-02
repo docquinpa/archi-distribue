@@ -214,6 +214,97 @@ spec:
     - port: 5432
       targetPort: 5432
 {{- end }}
+{{- if .Values.conducteursService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conducteurs-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.conducteursService.replicas }}
+  selector:
+    matchLabels:
+      app: conducteurs-service
+  template:
+    metadata:
+      labels:
+        app: conducteurs-service
+    spec:
+      containers:
+        - name: conducteurs-service
+          image: {{ .Values.conducteursService.image }}
+          imagePullPolicy: {{ .Values.conducteursService.imagePullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.conducteursService.service.targetPort | quote }}
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.conducteursService.database.host }}:{{ .Values.conducteursService.database.port }}/{{ .Values.conducteursService.database.name }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.conducteursService.database.user }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: {{ .Values.conducteursService.database.password }}
+            - name: KAFKA_ENABLED
+              value: {{ .Values.conducteursService.kafka.enabled | quote }}
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.conducteursService.kafka.bootstrapServers }}
+            - name: KAFKA_TOPIC_CONDUCTEUR
+              value: {{ .Values.conducteursService.kafka.topicConducteur }}
+            - name: KAFKA_GROUP_ID
+              value: {{ .Values.conducteursService.kafka.groupId }}
+            - name: APP_SECURITY_ENABLED
+              value: {{ .Values.conducteursService.security.enabled | quote }}
+            - name: JWT_ISSUER_URI
+              value: {{ .Values.conducteursService.security.jwtIssuerUri }}
+          ports:
+            - containerPort: {{ .Values.conducteursService.service.targetPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conducteurs-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: conducteurs-service
+  ports:
+    - port: {{ .Values.conducteursService.service.port }}
+      targetPort: {{ .Values.conducteursService.service.targetPort }}
+{{- if .Values.conducteursService.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: conducteurs-ingress
+  namespace: {{ .Values.namespace }}
+  {{- with .Values.conducteursService.ingress.annotations }}
+  annotations:
+{{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.conducteursService.ingress.className }}
+  rules:
+    - host: {{ .Values.conducteursService.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.conducteursService.ingress.path }}
+            pathType: {{ .Values.conducteursService.ingress.pathType }}
+            backend:
+              service:
+                name: conducteurs-service
+                port:
+                  number: {{ .Values.conducteursService.service.port }}
+          {{- if .Values.conducteursService.ingress.restPath }}
+          - path: {{ .Values.conducteursService.ingress.restPath }}
+            pathType: {{ .Values.conducteursService.ingress.pathType }}
+            backend:
+              service:
+                name: conducteurs-service
+                port:
+                  number: {{ .Values.conducteursService.service.port }}
+          {{- end }}
+{{- end }}
+{{- end }}
 {{- if .Values.postgresLocation.enabled }}
 ---
 apiVersion: apps/v1
