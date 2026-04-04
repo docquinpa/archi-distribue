@@ -115,6 +115,10 @@ spec:
               value: {{ .Values.vehiculesService.kafka.enabled | quote }}
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: {{ .Values.vehiculesService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+              value: {{ .Values.vehiculesService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+              value: {{ .Values.vehiculesService.kafka.bootstrapServers }}
             - name: KAFKA_TOPIC_VEHICLE
               value: {{ .Values.vehiculesService.kafka.topicVehicle }}
             - name: KAFKA_GROUP_ID
@@ -247,6 +251,10 @@ spec:
             - name: KAFKA_ENABLED
               value: {{ .Values.conducteursService.kafka.enabled | quote }}
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.conducteursService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+              value: {{ .Values.conducteursService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS
               value: {{ .Values.conducteursService.kafka.bootstrapServers }}
             - name: KAFKA_TOPIC_CONDUCTEUR
               value: {{ .Values.conducteursService.kafka.topicConducteur }}
@@ -430,6 +438,183 @@ spec:
   ports:
     - port: 5432
       targetPort: 5432
+{{- end }}
+{{- if .Values.maintenanceService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maintenance-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.maintenanceService.replicas }}
+  selector:
+    matchLabels:
+      app: maintenance-service
+  template:
+    metadata:
+      labels:
+        app: maintenance-service
+    spec:
+      containers:
+        - name: maintenance-service
+          image: {{ .Values.maintenanceService.image }}
+          imagePullPolicy: {{ .Values.maintenanceService.imagePullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.maintenanceService.service.targetPort | quote }}
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://{{ .Values.maintenanceService.database.host }}:{{ .Values.maintenanceService.database.port }}/{{ .Values.maintenanceService.database.name }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.maintenanceService.database.user }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: {{ .Values.maintenanceService.database.password }}
+            - name: KAFKA_ENABLED
+              value: {{ .Values.maintenanceService.kafka.enabled | quote }}
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.maintenanceService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+              value: {{ .Values.maintenanceService.kafka.bootstrapServers }}
+            - name: SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+              value: {{ .Values.maintenanceService.kafka.bootstrapServers }}
+            - name: KAFKA_TOPIC_MAINTENANCE
+              value: {{ .Values.maintenanceService.kafka.topicMaintenance }}
+            - name: KAFKA_TOPIC_VEHICLE
+              value: {{ .Values.maintenanceService.kafka.topicVehicle }}
+            - name: KAFKA_TOPIC_VEHICLE_DLT
+              value: {{ .Values.maintenanceService.kafka.topicVehicleDlt }}
+            - name: KAFKA_GROUP_ID
+              value: {{ .Values.maintenanceService.kafka.groupId }}
+            - name: KAFKA_RETRY_INTERVAL_MS
+              value: {{ .Values.maintenanceService.kafka.retryIntervalMs | quote }}
+            - name: KAFKA_RETRY_MAX_ATTEMPTS
+              value: {{ .Values.maintenanceService.kafka.retryMaxAttempts | quote }}
+            - name: APP_SECURITY_ENABLED
+              value: {{ .Values.maintenanceService.security.enabled | quote }}
+            - name: JWT_ISSUER_URI
+              value: {{ .Values.maintenanceService.security.jwtIssuerUri }}
+          ports:
+            - containerPort: {{ .Values.maintenanceService.service.targetPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: maintenance-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: maintenance-service
+  ports:
+    - port: {{ .Values.maintenanceService.service.port }}
+      targetPort: {{ .Values.maintenanceService.service.targetPort }}
+{{- if .Values.maintenanceService.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: maintenance-ingress
+  namespace: {{ .Values.namespace }}
+  {{- with .Values.maintenanceService.ingress.annotations }}
+  annotations:
+{{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.maintenanceService.ingress.className }}
+  rules:
+    - host: {{ .Values.maintenanceService.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.maintenanceService.ingress.path }}
+            pathType: {{ .Values.maintenanceService.ingress.pathType }}
+            backend:
+              service:
+                name: maintenance-service
+                port:
+                  number: {{ .Values.maintenanceService.service.port }}
+          {{- if .Values.maintenanceService.ingress.restPath }}
+          - path: {{ .Values.maintenanceService.ingress.restPath }}
+            pathType: {{ .Values.maintenanceService.ingress.pathType }}
+            backend:
+              service:
+                name: maintenance-service
+                port:
+                  number: {{ .Values.maintenanceService.service.port }}
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.gatewayService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.gatewayService.replicas }}
+  selector:
+    matchLabels:
+      app: gateway-service
+  template:
+    metadata:
+      labels:
+        app: gateway-service
+    spec:
+      containers:
+        - name: gateway-service
+          image: {{ .Values.gatewayService.image }}
+          imagePullPolicy: {{ .Values.gatewayService.imagePullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.gatewayService.service.targetPort | quote }}
+            - name: VEHICULES_GRAPHQL_URL
+              value: {{ .Values.gatewayService.downstream.vehiculesGraphqlUrl }}
+            - name: CONDUCTEURS_GRAPHQL_URL
+              value: {{ .Values.gatewayService.downstream.conducteursGraphqlUrl }}
+            - name: MAINTENANCE_GRAPHQL_URL
+              value: {{ .Values.gatewayService.downstream.maintenanceGraphqlUrl }}
+            - name: APP_SECURITY_ENABLED
+              value: {{ .Values.gatewayService.security.enabled | quote }}
+            - name: JWT_ISSUER_URI
+              value: {{ .Values.gatewayService.security.jwtIssuerUri }}
+          ports:
+            - containerPort: {{ .Values.gatewayService.service.targetPort }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-service
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: gateway-service
+  ports:
+    - port: {{ .Values.gatewayService.service.port }}
+      targetPort: {{ .Values.gatewayService.service.targetPort }}
+{{- if .Values.gatewayService.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway-ingress
+  namespace: {{ .Values.namespace }}
+  {{- with .Values.gatewayService.ingress.annotations }}
+  annotations:
+{{ toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.gatewayService.ingress.className }}
+  rules:
+    - host: {{ .Values.gatewayService.ingress.host }}
+      http:
+        paths:
+          - path: {{ .Values.gatewayService.ingress.path }}
+            pathType: {{ .Values.gatewayService.ingress.pathType }}
+            backend:
+              service:
+                name: gateway-service
+                port:
+                  number: {{ .Values.gatewayService.service.port }}
+{{- end }}
 {{- end }}
 {{- if .Values.keycloak.enabled }}
 ---

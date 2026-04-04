@@ -117,6 +117,64 @@ postgresMaintenance:
   user: maintenance
   password: maintenance
 
+maintenanceService:
+  enabled: true
+  image: locare-maintenance:dev
+  imagePullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8085
+    targetPort: 8085
+  ingress:
+    enabled: false
+    className: traefik
+    host: maintenance.api.locare.local
+    path: /graphql
+    restPath: /interventions
+    pathType: Prefix
+    annotations: {}
+  database:
+    host: postgres-maintenance
+    port: 5432
+    name: maintenance
+    user: maintenance
+    password: maintenance
+  kafka:
+    enabled: true
+    bootstrapServers: kafka:9092
+    topicMaintenance: maintenance_topic
+    topicVehicle: vehicule_topic
+    topicVehicleDlt: vehicule_topic.dlt
+    groupId: maintenance-service
+    retryIntervalMs: 1000
+    retryMaxAttempts: 2
+  security:
+    enabled: true
+    jwtIssuerUri: http://keycloak:8080/realms/LoCarE
+
+gatewayService:
+  enabled: true
+  image: locare-gateway:dev
+  imagePullPolicy: IfNotPresent
+  replicas: 1
+  service:
+    port: 8086
+    targetPort: 8086
+  ingress:
+    enabled: true
+    className: traefik
+    host: gateway.api.locare.local
+    path: /graphql
+    pathType: Prefix
+    annotations: {}
+  downstream:
+    vehiculesGraphqlUrl: http://vehicules-service:8081/graphql
+    conducteursGraphqlUrl: http://conducteurs-service:8082/graphql
+    maintenanceGraphqlUrl: http://maintenance-service:8085/graphql
+  security:
+    enabled: true
+    jwtIssuerUri: http://keycloak:8080/realms/LoCarE
+
 postgresEvenements:
   enabled: true
   image: postgres:16

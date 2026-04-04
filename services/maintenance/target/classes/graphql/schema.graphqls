@@ -1,0 +1,56 @@
+type Intervention {
+  id: ID!
+  vehicle_id: ID!
+  state: String!
+  date: String!
+  completed_date: String
+  prix: Float!
+  mileage_threshold: Int
+  current_mileage: Int
+  notes: String
+  preventive_alert: Boolean!
+}
+
+type MaintenanceHistory {
+  id: ID!
+  intervention_id: ID!
+  vehicle_id: ID!
+  event: String!
+  details: String
+  saga_id: String
+  timestamp: String!
+}
+
+type Query {
+  interventions: [Intervention!]
+  intervention(id: ID!): Intervention
+  preventiveAlerts(withinDays: Int): [Intervention!]
+  maintenanceHistory: [MaintenanceHistory!]
+  interventionHistory(intervention_id: ID!): [MaintenanceHistory!]
+}
+
+type Mutation {
+  createIntervention(
+    vehicle_id: ID!
+    state: String!
+    date: String!
+    prix: Float!
+    mileage_threshold: Int
+    current_mileage: Int
+    notes: String
+  ): Intervention
+
+  updateIntervention(
+    id: ID!
+    state: String
+    date: String
+    prix: Float
+    mileage_threshold: Int
+    current_mileage: Int
+    notes: String
+  ): Intervention
+
+  completeIntervention(id: ID!, prix: Float): Intervention
+  cancelIntervention(id: ID!, reason: String): Intervention
+  deleteIntervention(id: ID!): Boolean
+}

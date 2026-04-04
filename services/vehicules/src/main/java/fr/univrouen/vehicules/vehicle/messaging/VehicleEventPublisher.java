@@ -2,6 +2,7 @@ package fr.univrouen.vehicules.vehicle.messaging;
 
 import fr.univrouen.vehicules.vehicle.api.VehicleResponse;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
@@ -43,13 +44,19 @@ public class VehicleEventPublisher {
             return;
         }
 
+        String sagaId = UUID.randomUUID().toString();
+        String eventId = UUID.randomUUID().toString();
+
         VehicleEvent event = new VehicleEvent(
                 vehicleId,
                 null,
                 null,
                 "VEHICLE_DELETED",
                 Instant.now(),
-                "1.0"
+                "1.0",
+                eventId,
+                sagaId,
+                sagaId
         );
 
         kafkaTemplate.send(vehicleTopic, String.valueOf(vehicleId), event);
@@ -60,13 +67,19 @@ public class VehicleEventPublisher {
             return;
         }
 
+        String eventId = UUID.randomUUID().toString();
+        String correlationId = UUID.randomUUID().toString();
+
         VehicleEvent event = new VehicleEvent(
                 vehicle.id(),
                 vehicle.vin(),
                 vehicle.dispo(),
                 eventType,
                 Instant.now(),
-                "1.0"
+                "1.0",
+                eventId,
+                null,
+                correlationId
         );
 
         kafkaTemplate.send(vehicleTopic, String.valueOf(vehicle.id()), event);

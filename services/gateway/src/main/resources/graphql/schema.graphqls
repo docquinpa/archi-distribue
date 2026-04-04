@@ -1,0 +1,46 @@
+type Vehicle {
+  id: ID!
+  vin: String!
+  dispo: Boolean!
+  interventions: [Intervention!]
+}
+
+type Driver {
+  id: ID!
+  prenom: String!
+  nom: String!
+  permis: License
+}
+
+type License {
+  id: ID!
+  type: String
+  date_valid: String
+}
+
+type Intervention {
+  id: ID!
+  vehicle_id: ID!
+  state: String!
+  date: String!
+  completed_date: String
+  prix: Float!
+  mileage_threshold: Int
+  current_mileage: Int
+  notes: String
+  preventive_alert: Boolean
+}
+
+type Query {
+  vehicles: [Vehicle!]
+  vehicle(id: ID!): Vehicle
+
+  drivers: [Driver!]
+  driver(id: ID!): Driver
+
+  licenses: [License!]
+  license(id: ID!): License
+
+  interventions: [Intervention!]
+  intervention(id: ID!): Intervention
+}

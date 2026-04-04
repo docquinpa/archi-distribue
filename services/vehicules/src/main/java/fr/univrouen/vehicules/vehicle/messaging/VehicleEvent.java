@@ -8,6 +8,9 @@ public record VehicleEvent(
         Boolean dispo,
         String event,
         Instant timestamp,
-        String version
+        String version,
+        String event_id,
+        String saga_id,
+        String correlation_id
 ) {
 }

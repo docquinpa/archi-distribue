@@ -1,0 +1,5 @@
+fr/univrouen/maintenance/intervention/messaging/VehicleEventConsumerTest.class
+fr/univrouen/maintenance/intervention/messaging/VehicleEventKafkaIntegrationTest.class
+fr/univrouen/maintenance/MaintenanceApplicationTests.class
+fr/univrouen/maintenance/intervention/service/InterventionServiceTest.class
+fr/univrouen/maintenance/intervention/messaging/VehicleEventKafkaIntegrationTest$KafkaProducerTestConfig.class

@@ -9,7 +9,7 @@ RUN mvn -q -DskipTests clean package
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar /app/maitenance.jar
+COPY --from=build /app/target/*.jar /app/maintenance.jar
 ENV JAVA_TOOL_OPTIONS="-Dserver.port=8085"
 EXPOSE 8085
 ENTRYPOINT ["java", "-jar", "/app/maintenance.jar"]

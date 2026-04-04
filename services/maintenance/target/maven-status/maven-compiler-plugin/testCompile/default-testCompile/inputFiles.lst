@@ -1,0 +1,4 @@
+/home/pierreandre/Documents/Archi_Distrib/Projet/archi-distribue/services/maintenance/src/test/java/fr/univrouen/maintenance/MaintenanceApplicationTests.java
+/home/pierreandre/Documents/Archi_Distrib/Projet/archi-distribue/services/maintenance/src/test/java/fr/univrouen/maintenance/intervention/messaging/VehicleEventConsumerTest.java
+/home/pierreandre/Documents/Archi_Distrib/Projet/archi-distribue/services/maintenance/src/test/java/fr/univrouen/maintenance/intervention/messaging/VehicleEventKafkaIntegrationTest.java
+/home/pierreandre/Documents/Archi_Distrib/Projet/archi-distribue/services/maintenance/src/test/java/fr/univrouen/maintenance/intervention/service/InterventionServiceTest.java

@@ -30,14 +30,14 @@ class VehicleEventConsumerTest {
     void shouldUpsertOnCreatedEvent() {
         when(vehicleRepository.findById(7)).thenReturn(Optional.empty());
 
-        consumer.onVehicleEvent(new VehicleEvent(7, "VIN-EVT", true, "VEHICLE_CREATED", Instant.now(), "1.0"));
+        consumer.onVehicleEvent(new VehicleEvent(7, "VIN-EVT", true, "VEHICLE_CREATED", Instant.now(), "1.0", "evt-1", null, "corr-1"));
 
         verify(vehicleRepository).save(org.mockito.ArgumentMatchers.any(Vehicle.class));
     }
 
     @Test
     void shouldDeleteOnDeletedEvent() {
-        consumer.onVehicleEvent(new VehicleEvent(8, null, null, "VEHICLE_DELETED", Instant.now(), "1.0"));
+        consumer.onVehicleEvent(new VehicleEvent(8, null, null, "VEHICLE_DELETED", Instant.now(), "1.0", "evt-2", "saga-1", "corr-2"));
 
         verify(vehicleRepository).deleteById(8);
     }
